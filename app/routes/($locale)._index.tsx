@@ -14,6 +14,7 @@ import {MEDIA_FRAGMENT, PRODUCT_CARD_FRAGMENT} from '~/data/fragments';
 import {getHeroPlaceholder} from '~/lib/placeholders';
 import {seoPayload} from '~/lib/seo.server';
 import {routeHeaders} from '~/data/cache';
+import HeroCarousel, { HeroCarouselProps } from '~/components/carousel/HeroCarousel';
 
 export const headers = routeHeaders;
 
@@ -158,7 +159,24 @@ export default function Homepage() {
       {primaryHero && (
         <Hero {...primaryHero} height="full" top loading="eager" />
       )}
-
+      {featuredCollections && (
+        <Suspense>
+          <Await resolve={featuredCollections}>
+            {(response) => {
+              if (
+                !response ||
+                !response?.collections ||
+                !response?.collections?.nodes
+              ) {
+                return <></>;
+              }
+              return (
+                  <HeroCarousel featuredCollections={response.collections as unknown as HeroCarouselProps} />
+              );
+            }}
+          </Await>
+        </Suspense>
+      )}
       {featuredProducts && (
         <Suspense>
           <Await resolve={featuredProducts}>
@@ -171,11 +189,14 @@ export default function Homepage() {
                 return <></>;
               }
               return (
+                <>
                 <ProductSwimlane
                   products={response.products}
                   title="Featured Products"
                   count={4}
-                />
+                  />
+                  
+                </>
               );
             }}
           </Await>
